@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from judge.models import Problem, Submission, Coder, TestCase
 from judge.forms import UserForm, ProblemForm, SubmissionForm
 from judge.tasks import evaluate_submission
-
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     return render(request, "judge/index.html")
@@ -54,7 +54,7 @@ def loguserin(request):
     else:
         return render(request, "judge/login.html", {})
 
-
+@login_required
 def loguserout(request):
     if request.user.is_authenticated:
         logout(request)
@@ -93,6 +93,7 @@ def all_problems(request):
     problems = Problem.objects.all()
     return render(request, "judge/all.html", {"problems":problems})
 
+@login_required
 def submit(request, pid):
     if not request.user.is_authenticated:
         return HttpResponseRedirect('/judge/login/')
@@ -113,6 +114,7 @@ def submit(request, pid):
             payload = {"sub_form":sub_form, "pid":pid}
             return render(request, "judge/submit.html", payload)
 
+@login_required
 def view_submission(request, submission_id):
     required_sub = get_object_or_404(Submission, id = int(submission_id))
     if not required_sub.private or (required_sub.private and required_sub.submitter.user.username == request.user.username):
